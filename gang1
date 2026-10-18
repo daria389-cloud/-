@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Комплимент-конвертер (двусторонний)</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 520px; margin: 60px auto; padding: 0 16px; }
+  input { font-size: 16px; padding: 10px; width: 100%; box-sizing: border-box; }
+  #result { margin-top: 20px; font-size: 20px; font-weight: 600; min-height: 1.4em; }
+  #hint { color: #888; font-size: 13px; margin-top: 6px; }
+</style>
+</head>
+<body>
+  <h2>Комплимент-конвертер</h2>
+  <input id="word" placeholder="Введи слово или готовую фразу" autofocus>
+  <div id="hint">Примеры: «пизда» · «красивая пизда» · «всандалить в пизду» · «в нос»</div>
+  <div id="result"></div>
+
+<script>
+// грубое склонение в винительный (для прямого хода)
+function toAccusative(w) {
+  if (w.endsWith("а")) return w.slice(0, -1) + "у";
+  if (w.endsWith("я")) return w.slice(0, -1) + "ю";
+  return w;
+}
+// грубое возвращение в именительный (для обратного хода)
+function toNominative(w) {
+  if (w.endsWith("у")) return w.slice(0, -1) + "а";
+  if (w.endsWith("ю")) return w.slice(0, -1) + "я";
+  return w;
+}
+// подбор прилагательного по окончанию
+function adjFor(w) {
+  if (w.endsWith("а") || w.endsWith("я")) return "красивая";
+  if (w.endsWith("о") || w.endsWith("е")) return "красивое";
+  if (w.endsWith("ы") || w.endsWith("и")) return "красивые";
+  return "красивый";
+}
+
+function convert(input) {
+  const t = input.toLowerCase().trim();
+  if (!t) return "";
+
+  // 1) ввод начинается с "всандалить в ..." или "в ..." -> обратный ход
+  let m = t.match(/^(?:всандалить\s+в|в)\s+(.+)$/);
+  if (m) {
+    const nom = toNominative(m[1].trim());
+    return `у тебя ${adjFor(nom)} ${nom}`;
+  }
+
+  // 2) ввод начинается с "красив..." -> прямой ход
+  m = t.match(/^красив\S*\s+(.+)$/);
+  if (m) {
+    const acc = toAccusative(m[1].trim());
+    return `всандалить в ${acc}`;
+  }
+
+  // 3) голое слово -> по умолчанию считаем комплиментом
+  return `у тебя ${adjFor(t)} ${t}`;
+}
+
+const wordEl = document.getElementById("word");
+const resEl  = document.getElementById("result");
+
+function show() {
+  resEl.textContent = convert(wordEl.value);
+}
+
+wordEl.addEventListener("input", show);
+</script>
+</body>
+</html>
